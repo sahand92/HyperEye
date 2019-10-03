@@ -1,4 +1,5 @@
 function J = segmentHSI(D)
+%removes background and segments images
 tic;
 % D: is an HSI image (3D array), outputted by readHSIraw 
 
@@ -10,24 +11,19 @@ tic;
 % Use alternative methods in future (PCA, CNN, etc)
 D_rgb=(D(:,:,[72,72*2,72*3])); % pseudo-RGB from HSI image
 BW_mask=imbinarize(rgb2gray(D_rgb),0.06); % use grayscale image to create binary mask 
-%D_bg=D_rgb.*double(BW_mask); % apply mask to image
 D=D.*single(BW_mask); % apply mask to image
-
-%D_bg(D_bg==0)=1; % make background white
 D(D==0)=1; % make background white
 
 %-------------------------------------------------------------------------
 % use mask to recognize individual instances of the image
 cc = bwconncomp(BW_mask);
-%BW2 = ismember(labelmatrix(cc), idx);
 stats = regionprops(cc, 'Area','Centroid','BoundingBox');
-idx=find([stats.Area]>4000); % minimum region size
+idx=find([stats.Area]>4000); % minimum region size 4000
 centroids=cat(1,stats.Centroid);
 centroids=centroids(idx,:);
 boundingbox=cat(1,stats.BoundingBox);
 boundingbox=boundingbox(idx,:);
 
-% 
 %     figure
 %     imshow(D(:,:,[72,72*2,72*3]))
 %     hold on
@@ -36,7 +32,7 @@ boundingbox=boundingbox(idx,:);
 
 %Bounding Box
 J = ones(100,100,288,length(centroids),'single');
-%textprogressbar('segmenting image %: ');
+
 for k = 1 : length(centroids)
     thisBB = boundingbox(k,:);
 %     rectangle('Position',[thisBB(1),thisBB(2),thisBB(3),thisBB(4)],'EdgeColor','b','LineWidth',1 );
@@ -52,6 +48,5 @@ strcat('segmenting:',{' '},string(k),{' '},'of',{' '},string(length(centroids)))
         J(1:wp,1:lp,(1+3*(i-1)):3*i,k) = padded;
     end
 end
-%textprogressbar(' done');
 toc;
 end

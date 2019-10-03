@@ -1,4 +1,5 @@
 function D=readHSIraw(datafile)
+%reads .raw spectral image files 
 
 %input full filename: datafile='C:\Users\vickngc\MATLAB\measurement.raw'
 
@@ -6,7 +7,6 @@ function D=readHSIraw(datafile)
 hdrfile = strrep(datafile,'.raw','.hdr');
 whitereffile=strrep(datafile,'measurement.raw','Whiteref_measurement.raw');
 darkreffile=strrep(datafile,'measurement.raw','darkref_measurement.raw');
-
 
 info = utils.envihdrread(hdrfile);
 
@@ -21,7 +21,6 @@ darkref=mean(D_darkref,1);
 
 % calculate final HSI image
 D=(D_HSI-darkref)./(whiteref-darkref);
-
 
 % interpolate missing channel by taking average of prev and next channel
 D=reshape(D,[info.samples*info.lines,info.bands]);

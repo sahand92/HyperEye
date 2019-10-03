@@ -1,6 +1,6 @@
 
 function JJ = readandsegment(T,wavelengths)
-
+%segments multiple files and stacks the segments in a single array (JJ)
 % T: Table of sample names, where filenames are stored in column called 'Filename'
 % wavelengths: array index of wavelengths used, e.g., [72,72*2,72*3] for
 % RGB.
@@ -17,7 +17,7 @@ for ii = 1:length(T.Filename)
 
     D=utils.readHSIraw(filename);
     J = utils.segmentHSI(single(D));
-    J_rgb=J(:,:,wavelengths,:);%J(:,:,[72,72*2,72*3],:);
+    J_rgb=J(:,:,wavelengths,:);
         if ii==1
             JJ = J_rgb;
         else
