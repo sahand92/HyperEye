@@ -5,8 +5,8 @@ function J_4D=HSI_predicted(J, net)
         % net is a matlab deep learning neural network object. 
 %output: The predictions of "net" are added as an extra channel to J.        
 %--------------------------------------------------------------------
-% discard the first 10, and last 12 channels.
-J=J(:,:,10:end-12,:);  % consistent with size of NIR2HSI
+% discard the first 30, and last 12 channels.
+J=J(:,:,30:end-12,:);  % consistent with size of NIR2HSI
 
 %restructure J to appropriate size for doing predictions
 [h, w, c, n] = size(J);

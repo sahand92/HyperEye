@@ -9,7 +9,7 @@ bands_HSI=[958.59,964.26,969.94,975.61,981.28,986.95,992.62,998.29,1003.95,1009.
 bands_NIR=(400:2:2498);
 
 bands_HSI_in_NIR = bands_HSI(1:end-12);
-
+%1120
 bands_NIR_fine=(400:0.01:2498);
 
 idx = zeros(1,length(bands_HSI_in_NIR));
@@ -21,8 +21,9 @@ end
 NIR_fine =  interp1(bands_NIR.',spectra.',bands_NIR_fine,'linear','extrap').';
 s=NIR_fine(:,idx);
 
-% finally the 1st 10 channels are discarded (detector edge)
-s=s(:,10:end);
+% finally the 1st 30 channels are discarded (detector edge), which also
+% includes the detector switch (discontinuity) in the XDS scanner.
+s=s(:,30:end);
 
 %match intensity of NIR Eyefoss XDS 4 scanner to Specim hyperspec
 %using reference cell serial #20581
@@ -295,6 +296,6 @@ s=s(:,10:end);
     1.2822];
 
 % fix the intensity
-s=s.*ratio_HSI_to_NIR';
+s=s.*ratio_HSI_to_NIR(21:end)';
 
 end
