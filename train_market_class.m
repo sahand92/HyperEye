@@ -77,5 +77,21 @@ net = trainNetwork(augimds,layers,options);
 net = trainNetwork(XTrain1,YTrain,layers,options);
 
 [argvalue, argmax] = max(YPredicted');
-C=confusionmat(YTrain,argmax,'Order',{'setosa','versicolor','virginica'});
+%C=confusionmat(YTrain,argmax,'Order',{'setosa','versicolor','virginica'});
+
+classes=["blue"
+    "desi"
+    "dun"
+    "kabuli"
+    "kaspa"];
+
+Predicted_classes=categorical(argmax,1:length(classes),classes);
+position=[repmat(1:100:500,[1 5])',reshape(repmat(1:100:500,[5 1]),[25,1])];
+imshow(insertText(imtile(JJ(:,:,[1 2 3],:)),position,cellstr(Predicted_classes),'BoxColor','white'));
+
+imshow(imtile(J_4D(:,:,[268],:)))
+colormap jet
+caxis([10 30])
+
+mean(nonzeros(J_4D(:,:,268,25)))
 

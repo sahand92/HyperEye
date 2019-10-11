@@ -24,7 +24,7 @@ ind_edge=(mean(squeeze(J_4D))<0.01);
 HS_predict_img=zeros([w*h*n,1],'single'); %initalize predictions as an array of zeros
 HS_predict_img(ind_img) = predict(net,J_4D(1,:,1,ind_img)); %predict using net
 HS_predict_img(ind_edge)=0; %set predictions of edge pixels to zero. 
-
+%hist(HS_predict_img)
 % add prediction as (c+1)th channel
 J_4D(1,c+1,1,:)=HS_predict_img;
 
