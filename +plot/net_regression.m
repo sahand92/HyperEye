@@ -1,40 +1,99 @@
 
-function net_regression(XTrain,YTrain,model_NN)
+function net_regression(XTrain,YTrain,XValidation,YValidation,model_NN)
 
 net = model_NN; 
 YPredicted = predict(net,XTrain);
-scatter(YTrain,YPredicted,'black','.')
+YPredicted_v = predict(net,XValidation);
+residuals = YTrain-YPredicted;
+residuals_v = YValidation-YPredicted_v;
 
-md1 = fitlm(YTrain,YPredicted,'y~x1-1');
-hold on
+% figure ---------------------------------------------
+TSS = sum((YTrain-mean(YTrain)).^2);
+RSS = sum((YTrain-YPredicted).^2);
+Rsquared = 1 - RSS/TSS
 
-x = linspace(min(YTrain),max(YTrain),100);
-h = plot(md1.Coefficients.Estimate(1)*x+0,x,'red','LineWidth',2);
-h.Parent.FontSize = 14;
-xlabel('GP% Training')
-ylabel('GP% Predicted')
-box on
+TSS = sum((YValidation-mean(YPredicted_v)).^2);
+RSS_v = sum((YValidation-YPredicted_v).^2);
+Rsquared_v = 1 - RSS_v/TSS
 
-hold on
+Ycomb=[YTrain; YValidation];
+Y_fit=[YPredicted; YPredicted_v];
+y_cell=cell(repmat(cell({'Training'}),[length(YTrain) 1]));
+yV_cell=cell(repmat(cell({'Validation'}),[length(YValidation) 1]));
+y_cells=[y_cell; yV_cell];
 
+f=figure;
+set(gcf,'position',[320,101,600,780]);
+hp1=uipanel('position',[0 .25 1 .75]);
+hp2=uipanel('position',[0 0 1 .25]);
+hp1=scatterhist(Ycomb,Y_fit,'Direction','out','Kernel','off',...
+    'Location','NorthEast','Group',y_cells,'Parent',hp1);
+hp1(1).Children(2).MarkerFaceColor=[.07 .62 1];
+hp1(1).Children(2).MarkerSize=3;
+%hp1(1).Children(1).MarkerFaceColor=[1 .41 .16];
+hp1(1).Children(1).Marker='o';
+hp1(1).Children(1).MarkerSize=3;
+hp1(1).Children(1).LineWidth=1;
 
+hp1(2).Children(1).BinMethod='auto';
+hp1(2).Children(2).BinMethod='auto';
+hp1(3).Children(1).BinMethod='auto';
+hp1(3).Children(2).BinMethod='auto';
+
+ hp1(1).Parent.BackgroundColor='W';
+ hp2.BackgroundColor='W';
+ f.Color='W';
+line([min(YTrain) max(YPredicted)],[min(YTrain) max(YPredicted)])
 %------------- TextBox -----------------------------------
-dim = [.6 .2 .22 .2]; 
-dim1 = [.6 .12 .25 .15]; 
+dim = [.47 .15 .14 .16]; 
+
+R_2_str = strcat('R_{train}^2 = ',{' '},num2str(Rsquared,'%4.3f'));
+R_2_str_v = strcat('R_{val}^2 = ',{' '},num2str(Rsquared_v,'%4.3f'));
+N_cal = strcat('N_{train} = ',{' '},num2str(length(YTrain)));
+N_cal_v = strcat('N_{val} = ',{' '},num2str(length(YValidation)));
+model_name = strcat('model : ',{' '},inputname(5));
+
+str1 = [R_2_str,R_2_str_v,N_cal,N_cal_v,model_name];
 
 
-R_2_str = strcat('R^2 = ',{' '},num2str(md1.Rsquared.Ordinary));
-RMSE_str = strcat('RMSE = ',{' '},num2str(md1.RMSE));
-N_str = strcat('N = ',{' '},num2str(length(YPredicted)));
-model_name = strcat('model : ',{' '},inputname(3));
-str1 = [R_2_str,RMSE_str,N_str];
+% annotation('textbox',dim1,...
+%     'String',model_name,'FitBoxToText','off','Interpreter','none','EdgeColor','none');
+handles=guihandles(f);
 
-annotation('textbox',dim1,...
-    'String',model_name,'FitBoxToText','off','Interpreter','none','EdgeColor','none');
-  
-annotation('textbox',dim,...
-    'String',str1,'FitBoxToText','off');
+annotation(hp1(1).Parent,'textbox',dim,...
+    'String',str1,'FitBoxToText','off','FontSize',8);
 %---------------------------------------------------------
+ylabel('Y_{Predicted}')
+xlabel('Y')
+set(gca,'XAxisLocation','bottom')
+set(gca,'YAxisLocation','left')
+legend({'Training','Validation','Perfect Match'})
+axes('Parent',hp2);
+stem(residuals,'MarkerSize',2)
+hold on
+stem(residuals_v,'MarkerSize',2)
+xlabel('Observation')
+ylabel('Residual')
+% scatter(YTrain,YPredicted,10,'o','filled','MarkerFaceColor','blue')
+% hold on
+% scatter(YValidation,YPredicted_v,'o')
+% 
+% md1 = fitlm(YTrain,YPredicted,'y~x1+1')
+% hold on
+% 
+% x = linspace(min(YTrain),max(YTrain),100);
+% h = plot(x,md1.Coefficients.Estimate(2)*x+md1.Coefficients.Estimate(1),'red','LineWidth',2);
+% hold on
+% plot(x,x,'black','LineWidth',1)
+% legend('data','lin.reg.','y=x');
+%     
+% h.Parent.FontSize = 14;
+% xlabel('Y')
+% ylabel('Y Predicted')
+% box on
+% 
+% hold on
+
 
 end
 
