@@ -11,10 +11,12 @@ residuals_v = YValidation-YPredicted_v;
 TSS = sum((YTrain-mean(YTrain)).^2);
 RSS = sum((YTrain-YPredicted).^2);
 Rsquared = 1 - RSS/TSS
+SE = sqrt(RSS./length(YTrain));
 
 TSS = sum((YValidation-mean(YPredicted_v)).^2);
 RSS_v = sum((YValidation-YPredicted_v).^2);
 Rsquared_v = 1 - RSS_v/TSS
+SE_v = sqrt(RSS_v./length(YValidation));
 
 Ycomb=[YTrain; YValidation];
 Y_fit=[YPredicted; YPredicted_v];
@@ -45,15 +47,19 @@ hp1(3).Children(2).BinMethod='auto';
  f.Color='W';
 line([min(YTrain) max(YPredicted)],[min(YTrain) max(YPredicted)])
 %------------- TextBox -----------------------------------
-dim = [.47 .15 .14 .16]; 
+dim = [.48 .12 .15 .2]; 
+dim2 = [.14 .54 .14 .08]; 
 
 R_2_str = strcat('R_{train}^2 = ',{' '},num2str(Rsquared,'%4.3f'));
 R_2_str_v = strcat('R_{val}^2 = ',{' '},num2str(Rsquared_v,'%4.3f'));
+SE_str = strcat('SE_{Train} = ',{' '},num2str(SE,'%4.3f'));
+SE_v_str = strcat('SE_{val} = ',{' '},num2str(SE_v,'%4.3f'));
 N_cal = strcat('N_{train} = ',{' '},num2str(length(YTrain)));
 N_cal_v = strcat('N_{val} = ',{' '},num2str(length(YValidation)));
 model_name = strcat('model : ',{' '},inputname(5));
 
-str1 = [R_2_str,R_2_str_v,N_cal,N_cal_v,model_name];
+str1 = [R_2_str,SE_str,R_2_str_v,SE_v_str,model_name];
+str2 = [N_cal, N_cal_v];
 
 
 % annotation('textbox',dim1,...
@@ -62,6 +68,8 @@ handles=guihandles(f);
 
 annotation(hp1(1).Parent,'textbox',dim,...
     'String',str1,'FitBoxToText','off','FontSize',8);
+annotation(hp1(1).Parent,'textbox',dim2,...
+    'String',str2,'FitBoxToText','off','FontSize',8);
 %---------------------------------------------------------
 ylabel('Y_{Predicted}')
 xlabel('Y')
@@ -69,10 +77,12 @@ set(gca,'XAxisLocation','bottom')
 set(gca,'YAxisLocation','left')
 legend({'Training','Validation','Perfect Match'})
 axes('Parent',hp2);
-stem(residuals,'MarkerSize',2)
+[y_sorted, y_order] = sort(YTrain);
+stem(residuals(y_order),'MarkerSize',2)
 hold on
-stem(residuals_v,'MarkerSize',2)
-xlabel('Observation')
+[y_v_sorted, y_v_order] = sort(YValidation);
+stem(residuals_v(y_v_order),'MarkerSize',2)
+xlabel('Observation (Y sorted, low to high)')
 ylabel('Residual')
 % scatter(YTrain,YPredicted,10,'o','filled','MarkerFaceColor','blue')
 % hold on

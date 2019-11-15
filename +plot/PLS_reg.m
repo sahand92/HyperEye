@@ -67,10 +67,12 @@ residuals_v=yV-yfitv;
 TSS = sum((y-mean(y)).^2);
 RSS = sum((y-yfit).^2);
 Rsquared = 1 - RSS/TSS
+SE = sqrt(RSS./length(y));
 
 TSS = sum((yV-mean(yV)).^2);
 RSS_v = sum((yV-yfitv).^2);
 Rsquared_v = 1 - RSS_v/TSS
+SE_v = sqrt(RSS_v./length(yV));
 
 
 Ycomb=[y; yV];
@@ -102,21 +104,27 @@ hp1(3).Children(2).BinMethod='auto';
  f.Color='W';
 line([min(y) max(yfit)],[min(y) max(yfit)])
 %------------- TextBox -----------------------------------
-dim = [.47 .15 .14 .16]; 
+dim = [.47 .15 .14 .16];
+dim2 = [.14 .54 .14 .08]; 
+
 
 R_2_str = strcat('R_{cal}^2 = ',{' '},num2str(Rsquared,'%4.3f'));
 R_2_str_v = strcat('R_{val}^2 = ',{' '},num2str(Rsquared_v,'%4.3f'));
+SE_str = strcat('SE_{cal} = ',{' '},num2str(SE,'%4.3f'));
+SE_v_str = strcat('SE_{val} = ',{' '},num2str(SE_v,'%4.3f'));
 N_cal = strcat('N_{cal} = ',{' '},num2str(length(y)));
 N_cal_v = strcat('N_{val} = ',{' '},num2str(length(yV)));
 
-str1 = [R_2_str,R_2_str_v,N_cal,N_cal_v];
-
+str1 = [R_2_str,SE_str,R_2_str_v,SE_v_str];
+str2 = [N_cal,N_cal_v];
 % annotation('textbox',dim1,...
 %     'String',model_name,'FitBoxToText','off','Interpreter','none','EdgeColor','none');
 handles=guihandles(f);
 
 annotation(hp1(1).Parent,'textbox',dim,...
     'String',str1,'FitBoxToText','off','FontSize',8);
+annotation(hp1(1).Parent,'textbox',dim2,...
+    'String',str2,'FitBoxToText','off','FontSize',8);
 %---------------------------------------------------------
 ylabel('Y_{Predicted}')
 xlabel('Y')
@@ -124,8 +132,10 @@ set(gca,'XAxisLocation','bottom')
 set(gca,'YAxisLocation','left')
 legend({'Calibration','Validation','Perfect Match'})
 axes('Parent',hp2);
-stem(residuals,'MarkerSize',2)
+[y_sorted, y_order] = sort(y);
+stem(residuals(y_order),'MarkerSize',2)
 hold on
-stem(residuals_v,'MarkerSize',2)
-xlabel('Observation')
+[y_v_sorted, y_v_order] = sort(yV);
+stem(residuals_v(y_v_order),'MarkerSize',2)
+xlabel('Observation (Y sorted, low to high)')
 ylabel('Residual')
