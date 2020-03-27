@@ -296,6 +296,6 @@ s=s(:,30:end);
     1.2822];
 
 % fix the intensity
-s=s.*ratio_HSI_to_NIR(21:end)';
+s=s;%.*ratio_HSI_to_NIR(21:end)';
 
 end

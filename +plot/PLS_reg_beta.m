@@ -1,20 +1,21 @@
-function [beta] = PLS_reg(spectra,variable,fold)
+function PLS_reg_beta(spectra,variable,fold,beta)
 %clearvars -except T spectra variable ncomp
 
 %spectra=table2array(T(:,7:end));
 %variable=T.VarName6;
-  spectra_diff=(diff(spectra(:,370:end-80),2,2));
-% % %spectra_diff=spectra(:,50:end-50);
-% % 
-% % %spectra_diff=(diff(spectra(:,50:end-50),2,2));
-% % % %spectra_diff(:,298:305)=ones(1,8).*(spectra_diff(:,297)+spectra_diff(:,306))./2;
-% % % 
-% % % 
-% spectra_diff=spectra';
-% % % %spectra_diff=lowpass(spectra_diff',50,length(spectra_diff));
-  rd = 2;
-  fl = 11;
-  spectra_diff = utils.sgolayfilt(spectra_diff',rd,fl);
+
+%spectra_diff=(diff(spectra(:,370:end-80),2,2));
+%spectra_diff=spectra(:,50:end-50);
+
+%spectra_diff=(diff(spectra(:,50:end-50),2,2));
+% %spectra_diff(:,298:305)=ones(1,8).*(spectra_diff(:,297)+spectra_diff(:,306))./2;
+% 
+% 
+spectra_diff=spectra;
+% %spectra_diff=lowpass(spectra_diff',50,length(spectra_diff));
+%    rd = 2;
+%    fl = 11;
+%    spectra_diff = utils.sgolayfilt(spectra_diff',rd,fl);
 
 f=figure;
 set(gcf,'position',[320,101,750,780]);
@@ -50,16 +51,13 @@ spectra_GP=spectra_diff;
 spectra_GP(:,ind_GP_0)=[];
 Y(ind_GP_0)=[];
 
-N=floor(size(spectra_GP,2)*0.75);
-%N=501;
-%N
+N=floor(size(spectra_GP,2)*3/4);
+
 X=spectra_GP(:,1:N)';
 y=Y(1:N);
 XV=spectra_GP(:,N+1:end)';
 yV=Y(N+1:end);
 
-
-[XL,yl,XS,YS,beta,PCTVAR,mse] = plsregress(X,y,5);
 
 yfit = [ones(size(X,1),1) X]*beta;
 residuals=y-yfit;
@@ -69,30 +67,13 @@ residuals_v=yV-yfitv;
 ind_out_v=find(isoutlier(residuals_v)==1);
 
 %second calculation after outlier removal ------------------------------
-X(ind_out,:)=[];
-y(ind_out)=[];
-XV(ind_out_v,:)=[];
-yV(ind_out_v)=[];
+% X(ind_out,:)=[];
+% y(ind_out)=[];
+% XV(ind_out_v,:)=[];
+% yV(ind_out_v)=[];
     % Do PLS using 1:30 components------------------------------------------
-    for i=1:20
+    
 
-    [XL,yl,XS,YS,beta,PCTVAR,mse] = plsregress(X,y,i);
-    yfit = [ones(size(X,1),1) X]*beta;
-    yfitv = [ones(size(XV,1),1) XV]*beta;
-
-    TSS = sum((y-mean(y)).^2);
-    RSS(i) = sum((y-yfit).^2);
-    Rsquared(i) = 1 - RSS(i)/TSS;
-
-    TSS = sum((yV-mean(yV)).^2);
-    RSS_v(i) = sum((yV-yfitv).^2);
-    Rsquared_v(i) = 1 - RSS_v(i)/TSS;
-    end
-    ncomp=find(RSS_v==min(RSS_v));
-
-    %-----------------------------------------------------------------------
-
-[XL,yl,XS,YS,beta,PCTVAR,mse] = plsregress(X,y,ncomp);
 yfit = [ones(size(X,1),1) X]*beta;
 residuals=y-yfit;
 yfitv = [ones(size(XV,1),1) XV]*beta;
@@ -157,10 +138,9 @@ SE_str = strcat('SE_{cal} = ',{' '},num2str(SE,'%4.3f'));
 SE_v_str = strcat('SE_{val} = ',{' '},num2str(SE_v,'%4.3f'));
 N_cal = strcat('N_{cal} = ',{' '},num2str(length(y)));
 N_cal_v = strcat('N_{val} = ',{' '},num2str(length(yV)));
-ncomp_str=strcat('N_{components} =',{' '},num2str(ncomp));
 
 str1 = [R_2_str,SE_str,R_2_str_v,SE_v_str];
-str2 = [N_cal,N_cal_v,ncomp_str];
+str2 = [N_cal,N_cal_v];
 % annotation('textbox',dim1,...
 %     'String',model_name,'FitBoxToText','off','Interpreter','none','EdgeColor','none');
 handles=guihandles(f);

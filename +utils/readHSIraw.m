@@ -15,18 +15,19 @@ D_HSI=multibandread(datafile,[info.lines,info.samples,info.bands],'uint16',0,'bi
 D_whiteref=multibandread(whitereffile,[128,384,288],'uint16',0,'bil','ieee-le');
 D_darkref=multibandread(darkreffile,[25,384,288],'uint16',0,'bil','ieee-le');
 
-% average reference lines
-whiteref=mean(D_whiteref,1);
-darkref=mean(D_darkref,1);
+whiteref=((mean(D_whiteref,1)));
+darkref=((mean(D_darkref,1)));
 
-% calculate final HSI image
-D=(D_HSI-darkref)./(whiteref-darkref);
+% Apply dark and white reference
+R=(1-(whiteref-D_HSI)./(whiteref-darkref));
 
-% interpolate missing channel by taking average of prev and next channel
-D=reshape(D,[info.samples*info.lines,info.bands]);
-[n, channel]=find(isnan(D)==1);
-D(n,channel)=(D(n,channel+1)+D(n,channel-1))./2;
-D=reshape(D,[info.lines, info.samples, info.bands]);
+%interpolate missing channel by taking average of prev and next channel
+R=reshape(R,[info.samples*info.lines,info.bands]);
+[n, channel]=find(isnan(R)==1 | isinf(R)==1);
+R(n,channel)=(R(n,channel+1)+R(n,channel-1))./2;
+R=reshape(R,[info.lines, info.samples, info.bands]);
+
+D=R;%real(-log10(1-R));
 end
 
 

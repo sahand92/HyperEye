@@ -1,9 +1,25 @@
 
-function net_regression(XTrain,YTrain,XValidation,YValidation,model_NN)
+function plot(XTrain,YTrain,XValidation,YValidation,parameters,state)
+executionEnvironment = "auto";
 
-net = model_NN; 
-YPredicted = predict(net,XTrain);
-YPredicted_v = predict(net,XValidation);
+dlXTrain = dlarray(XTrain,'SSCB');
+if (executionEnvironment == "auto" && canUseGPU) || executionEnvironment == "gpu"
+    dlXTrain = gpuArray(dlXTrain);
+end
+dlXValidation = dlarray(XValidation,'SSCB');
+if (executionEnvironment == "auto" && canUseGPU) || executionEnvironment == "gpu"
+    dlXValidation = gpuArray(dlXValidation);
+end
+
+doTraining = false;
+[dlYPred_1,dlYPred_2, dlYPred_3] = model.multitask.model_multitask(dlXTrain, parameters,doTraining,state);
+[dlYVal_1,dlYVal_2,dlYVal_3] = model.multitask.model_multitask(dlXValidation, parameters,doTraining,state);
+
+% YTrain = YTrain_1;
+% YValidation = YValidation_1;
+
+YPredicted = gather(extractdata(dlYPred_2))';
+YPredicted_v = gather(extractdata(dlYVal_2))';
 residuals = YTrain-YPredicted;
 residuals_v = YValidation-YPredicted_v;
 

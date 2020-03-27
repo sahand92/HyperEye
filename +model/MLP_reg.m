@@ -1,30 +1,23 @@
-function [layers options augimds] = conv3_class(XTrain,YTrain,XValidation,YValidation)
+function [layers options] = MLP_reg(XTrain,YTrain,XValidation,YValidation)
 % -------------------------------------------------------------
 layers = [
     imageInputLayer([size(XTrain,1) size(XTrain,2) size(XTrain,3)])
-
-    convolution2dLayer(8,16,'Padding',[1 1 1 1],'stride',[4 4], 'NumChannels',size(XTrain,3))
+    fullyConnectedLayer(10)
     batchNormalizationLayer
     reluLayer
-    
-    maxPooling2dLayer(3,'Stride',2)
-
-    convolution2dLayer(4,32,'Padding','same','stride',[2 2])
+    fullyConnectedLayer(10)
     batchNormalizationLayer
     reluLayer
-
-    %maxPooling2dLayer(2,'Stride',2)
-    
-    fullyConnectedLayer(200)
-    fullyConnectedLayer(size(categories(YTrain),1))
-    softmaxLayer
-    classificationLayer];
+    fullyConnectedLayer(10)
+    batchNormalizationLayer
+    reluLayer
+    fullyConnectedLayer(1)
+    regressionLayer];
 % -------------------------------------------------------------
 miniBatchSize  = 128;
 validationFrequency = floor(numel(YTrain)/miniBatchSize);
 options = trainingOptions('adam', ... %'sgdm'
     'MiniBatchSize',miniBatchSize, ...
-    'ExecutionEnvironment','multi-gpu',...
     'MaxEpochs',1000, ...
     'InitialLearnRate',1e-3, ...
     'LearnRateSchedule','none', ...
@@ -36,10 +29,4 @@ options = trainingOptions('adam', ... %'sgdm'
     'Plots','training-progress', ...
     'Verbose',true);
 % -------------------------------------------------------------
-imageAugmenter = imageDataAugmenter( ...
-    'RandRotation',[-90,90], ...
-    'RandXTranslation',[-10 10], ...
-    'RandYTranslation',[-10 10]);
-augimds = augmentedImageDatastore([size(XTrain,1) size(XTrain,2) size(XTrain,3)],XTrain,YTrain,'DataAugmentation',imageAugmenter);
-%minibatch = preview(augimds);
 end

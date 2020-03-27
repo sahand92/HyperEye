@@ -1,0 +1,358 @@
+
+<!DOCTYPE html
+  PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html><head>
+      <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+   <!--
+This HTML was auto-generated from MATLAB code.
+To make changes, update the MATLAB code and republish this document.
+      --><title>PLS_reg</title><meta name="generator" content="MATLAB 9.7"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2019-11-19"><meta name="DC.source" content="PLS_reg.m"><style type="text/css">
+html,body,div,span,applet,object,iframe,h1,h2,h3,h4,h5,h6,p,blockquote,pre,a,abbr,acronym,address,big,cite,code,del,dfn,em,font,img,ins,kbd,q,s,samp,small,strike,strong,sub,sup,tt,var,b,u,i,center,dl,dt,dd,ol,ul,li,fieldset,form,label,legend,table,caption,tbody,tfoot,thead,tr,th,td{margin:0;padding:0;border:0;outline:0;font-size:100%;vertical-align:baseline;background:transparent}body{line-height:1}ol,ul{list-style:none}blockquote,q{quotes:none}blockquote:before,blockquote:after,q:before,q:after{content:'';content:none}:focus{outine:0}ins{text-decoration:none}del{text-decoration:line-through}table{border-collapse:collapse;border-spacing:0}
+
+html { min-height:100%; margin-bottom:1px; }
+html body { height:100%; margin:0px; font-family:Arial, Helvetica, sans-serif; font-size:10px; color:#000; line-height:140%; background:#fff none; overflow-y:scroll; }
+html body td { vertical-align:top; text-align:left; }
+
+h1 { padding:0px; margin:0px 0px 25px; font-family:Arial, Helvetica, sans-serif; font-size:1.5em; color:#d55000; line-height:100%; font-weight:normal; }
+h2 { padding:0px; margin:0px 0px 8px; font-family:Arial, Helvetica, sans-serif; font-size:1.2em; color:#000; font-weight:bold; line-height:140%; border-bottom:1px solid #d6d4d4; display:block; }
+h3 { padding:0px; margin:0px 0px 5px; font-family:Arial, Helvetica, sans-serif; font-size:1.1em; color:#000; font-weight:bold; line-height:140%; }
+
+a { color:#005fce; text-decoration:none; }
+a:hover { color:#005fce; text-decoration:underline; }
+a:visited { color:#004aa0; text-decoration:none; }
+
+p { padding:0px; margin:0px 0px 20px; }
+img { padding:0px; margin:0px 0px 20px; border:none; }
+p img, pre img, tt img, li img, h1 img, h2 img { margin-bottom:0px; } 
+
+ul { padding:0px; margin:0px 0px 20px 23px; list-style:square; }
+ul li { padding:0px; margin:0px 0px 7px 0px; }
+ul li ul { padding:5px 0px 0px; margin:0px 0px 7px 23px; }
+ul li ol li { list-style:decimal; }
+ol { padding:0px; margin:0px 0px 20px 0px; list-style:decimal; }
+ol li { padding:0px; margin:0px 0px 7px 23px; list-style-type:decimal; }
+ol li ol { padding:5px 0px 0px; margin:0px 0px 7px 0px; }
+ol li ol li { list-style-type:lower-alpha; }
+ol li ul { padding-top:7px; }
+ol li ul li { list-style:square; }
+
+.content { font-size:1.2em; line-height:140%; padding: 20px; }
+
+pre, code { font-size:12px; }
+tt { font-size: 1.2em; }
+pre { margin:0px 0px 20px; }
+pre.codeinput { padding:10px; border:1px solid #d3d3d3; background:#f7f7f7; }
+pre.codeoutput { padding:10px 11px; margin:0px 0px 20px; color:#4c4c4c; }
+pre.error { color:red; }
+
+@media print { pre.codeinput, pre.codeoutput { word-wrap:break-word; width:100%; } }
+
+span.keyword { color:#0000FF }
+span.comment { color:#228B22 }
+span.string { color:#A020F0 }
+span.untermstring { color:#B20000 }
+span.syscmd { color:#B28C00 }
+
+.footer { width:auto; padding:10px 0px; margin:25px 0px 0px; border-top:1px dotted #878787; font-size:0.8em; line-height:140%; font-style:italic; color:#878787; text-align:left; float:none; }
+.footer p { margin:0px; }
+.footer a { color:#878787; }
+.footer a:hover { color:#878787; text-decoration:underline; }
+.footer a:visited { color:#878787; }
+
+table th { padding:7px 5px; text-align:left; vertical-align:middle; border: 1px solid #d6d4d4; font-weight:bold; }
+table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px solid #d6d4d4; }
+
+
+
+
+
+  </style></head><body><div class="content"><pre class="codeinput"><span class="keyword">function</span> [Rsquared Rsquared_v] = PLS_reg(spectra,variable,ncomp)
+<span class="comment">%clearvars -except T spectra variable ncomp</span>
+
+<span class="comment">%spectra=table2array(T(:,15:end));</span>
+<span class="comment">%variable=T.VarName6;</span>
+
+spectra_diff=(diff(spectra(:,370:end-80),2,2));
+<span class="comment">%spectra_diff=(diff(spectra(:,50:end-50),2,2));</span>
+<span class="comment">%spectra_diff(:,298:305)=ones(1,8).*(spectra_diff(:,297)+spectra_diff(:,306))./2;</span>
+
+
+<span class="comment">%spectra_diff=spectra_diff';</span>
+<span class="comment">%spectra_diff=lowpass(spectra_diff',50,length(spectra_diff));</span>
+rd = 2;
+fl = 11;
+spectra_diff = sgolayfilt(spectra_diff',rd,fl);
+spectra_diff=zscore(spectra_diff);
+
+
+<span class="comment">%inds=kmeans(spectra_diff',3,'Distance','cityblock');</span>
+
+<span class="comment">%spectra_diff=spectra_diff(:,inds==1);</span>
+
+Y=variable;<span class="comment">% Protien ISI(inds==1);</span>
+<span class="comment">%+T.VarName14;</span>
+
+<span class="comment">%randomize observations and validations</span>
+indperm=randperm(length(Y));
+Y(indperm)=Y;
+spectra_diff(:,indperm)=spectra_diff;
+<span class="comment">%---------------------------------------</span>
+ind_GP_0=find(Y==0);
+spectra_GP=spectra_diff;
+spectra_GP(:,ind_GP_0)=[];
+Y(ind_GP_0)=[];
+
+N=floor(size(spectra_GP,2)*3/4);
+X=spectra_GP(:,1:N)';
+y=Y(1:N);
+XV=spectra_GP(:,N+1:end)';
+yV=Y(N+1:end);
+
+
+[XL,yl,XS,YS,beta,PCTVAR,mse] = plsregress(X,y,5);
+
+yfit = [ones(size(X,1),1) X]*beta;
+residuals=y-yfit;
+yfitv = [ones(size(XV,1),1) XV]*beta;
+ind_out=find(isoutlier(residuals)==1);
+residuals_v=yV-yfitv;
+ind_out_v=find(isoutlier(residuals_v)==1);
+
+<span class="comment">% second calculation after outlier removal ------------------------------</span>
+X(ind_out,:)=[];
+y(ind_out)=[];
+<span class="comment">% XV(ind_out_v,:)=[];</span>
+<span class="comment">% yV(ind_out_v)=[];</span>
+[XL,yl,XS,YS,beta,PCTVAR,mse] = plsregress(X,y,ncomp);
+yfit = [ones(size(X,1),1) X]*beta;
+residuals=y-yfit;
+yfitv = [ones(size(XV,1),1) XV]*beta;
+residuals_v=yV-yfitv;
+
+
+
+<span class="comment">% ------------------------------------------------------------------------</span>
+TSS = sum((y-mean(y)).^2);
+RSS = sum((y-yfit).^2);
+Rsquared = 1 - RSS/TSS
+SE = sqrt(RSS./length(y));
+
+TSS = sum((yV-mean(yV)).^2);
+RSS_v = sum((yV-yfitv).^2);
+Rsquared_v = 1 - RSS_v/TSS
+SE_v = sqrt(RSS_v./length(yV));
+
+
+Ycomb=[y; yV];
+Y_fit=[yfit; yfitv];
+y_cell=cell(repmat(cell({<span class="string">'Calibration'</span>}),[length(y) 1]));
+yV_cell=cell(repmat(cell({<span class="string">'Validation'</span>}),[length(yV) 1]));
+y_cells=[y_cell; yV_cell];
+
+f=figure;
+set(gcf,<span class="string">'position'</span>,[320,101,600,780]);
+hp1=uipanel(<span class="string">'position'</span>,[0 .25 1 .75]);
+hp2=uipanel(<span class="string">'position'</span>,[0 0 1 .25]);
+hp1=scatterhist(Ycomb,Y_fit,<span class="string">'Direction'</span>,<span class="string">'out'</span>,<span class="string">'Kernel'</span>,<span class="string">'off'</span>,<span class="keyword">...</span>
+    <span class="string">'Location'</span>,<span class="string">'NorthEast'</span>,<span class="string">'Group'</span>,y_cells,<span class="string">'Parent'</span>,hp1);
+hp1(1).Children(2).MarkerFaceColor=[.07 .62 1];
+hp1(1).Children(2).MarkerSize=3;
+<span class="comment">%hp1(1).Children(1).MarkerFaceColor=[1 .41 .16];</span>
+hp1(1).Children(1).Marker=<span class="string">'o'</span>;
+hp1(1).Children(1).MarkerSize=3;
+hp1(1).Children(1).LineWidth=1;
+
+hp1(2).Children(1).BinMethod=<span class="string">'auto'</span>;
+hp1(2).Children(2).BinMethod=<span class="string">'auto'</span>;
+hp1(3).Children(1).BinMethod=<span class="string">'auto'</span>;
+hp1(3).Children(2).BinMethod=<span class="string">'auto'</span>;
+
+ hp1(1).Parent.BackgroundColor=<span class="string">'W'</span>;
+ hp2.BackgroundColor=<span class="string">'W'</span>;
+ f.Color=<span class="string">'W'</span>;
+line([min(y) max(yfit)],[min(y) max(yfit)])
+<span class="comment">%------------- TextBox -----------------------------------</span>
+dim = [.47 .15 .14 .16];
+dim2 = [.14 .54 .14 .08];
+
+
+R_2_str = strcat(<span class="string">'R_{cal}^2 = '</span>,{<span class="string">' '</span>},num2str(Rsquared,<span class="string">'%4.3f'</span>));
+R_2_str_v = strcat(<span class="string">'R_{val}^2 = '</span>,{<span class="string">' '</span>},num2str(Rsquared_v,<span class="string">'%4.3f'</span>));
+SE_str = strcat(<span class="string">'SE_{cal} = '</span>,{<span class="string">' '</span>},num2str(SE,<span class="string">'%4.3f'</span>));
+SE_v_str = strcat(<span class="string">'SE_{val} = '</span>,{<span class="string">' '</span>},num2str(SE_v,<span class="string">'%4.3f'</span>));
+N_cal = strcat(<span class="string">'N_{cal} = '</span>,{<span class="string">' '</span>},num2str(length(y)));
+N_cal_v = strcat(<span class="string">'N_{val} = '</span>,{<span class="string">' '</span>},num2str(length(yV)));
+
+str1 = [R_2_str,SE_str,R_2_str_v,SE_v_str];
+str2 = [N_cal,N_cal_v];
+<span class="comment">% annotation('textbox',dim1,...</span>
+<span class="comment">%     'String',model_name,'FitBoxToText','off','Interpreter','none','EdgeColor','none');</span>
+handles=guihandles(f);
+
+annotation(hp1(1).Parent,<span class="string">'textbox'</span>,dim,<span class="keyword">...</span>
+    <span class="string">'String'</span>,str1,<span class="string">'FitBoxToText'</span>,<span class="string">'off'</span>,<span class="string">'FontSize'</span>,8);
+annotation(hp1(1).Parent,<span class="string">'textbox'</span>,dim2,<span class="keyword">...</span>
+    <span class="string">'String'</span>,str2,<span class="string">'FitBoxToText'</span>,<span class="string">'off'</span>,<span class="string">'FontSize'</span>,8);
+<span class="comment">%---------------------------------------------------------</span>
+ylabel(<span class="string">'Y_{Predicted}'</span>)
+xlabel(<span class="string">'Y'</span>)
+set(gca,<span class="string">'XAxisLocation'</span>,<span class="string">'bottom'</span>)
+set(gca,<span class="string">'YAxisLocation'</span>,<span class="string">'left'</span>)
+legend({<span class="string">'Calibration'</span>,<span class="string">'Validation'</span>,<span class="string">'Perfect Match'</span>})
+axes(<span class="string">'Parent'</span>,hp2);
+[y_sorted, y_order] = sort(y);
+stem(residuals(y_order),<span class="string">'MarkerSize'</span>,2)
+hold <span class="string">on</span>
+[y_v_sorted, y_v_order] = sort(yV);
+stem(residuals_v(y_v_order),<span class="string">'MarkerSize'</span>,2)
+xlabel(<span class="string">'Observation (Y sorted, low to high)'</span>)
+ylabel(<span class="string">'Residual'</span>)
+</pre><pre class="codeoutput error">Not enough input arguments.
+
+Error in plot.PLS_reg (line 7)
+spectra_diff=(diff(spectra(:,370:end-80),2,2));
+</pre><p class="footer"><br><a href="https://www.mathworks.com/products/matlab/">Published with MATLAB&reg; R2019b</a><br></p></div><!--
+##### SOURCE BEGIN #####
+function [Rsquared Rsquared_v] = PLS_reg(spectra,variable,ncomp)
+%clearvars -except T spectra variable ncomp
+
+%spectra=table2array(T(:,15:end));
+%variable=T.VarName6;
+
+spectra_diff=(diff(spectra(:,370:end-80),2,2));
+%spectra_diff=(diff(spectra(:,50:end-50),2,2));
+%spectra_diff(:,298:305)=ones(1,8).*(spectra_diff(:,297)+spectra_diff(:,306))./2;
+
+
+%spectra_diff=spectra_diff';
+%spectra_diff=lowpass(spectra_diff',50,length(spectra_diff));
+rd = 2;
+fl = 11;
+spectra_diff = sgolayfilt(spectra_diff',rd,fl);
+spectra_diff=zscore(spectra_diff);
+
+
+%inds=kmeans(spectra_diff',3,'Distance','cityblock');
+
+%spectra_diff=spectra_diff(:,inds==1);
+
+Y=variable;% Protien ISI(inds==1);
+%+T.VarName14;
+
+%randomize observations and validations
+indperm=randperm(length(Y));
+Y(indperm)=Y;
+spectra_diff(:,indperm)=spectra_diff;
+%REPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASH-
+ind_GP_0=find(Y==0);
+spectra_GP=spectra_diff;
+spectra_GP(:,ind_GP_0)=[];
+Y(ind_GP_0)=[];
+
+N=floor(size(spectra_GP,2)*3/4);
+X=spectra_GP(:,1:N)';
+y=Y(1:N);
+XV=spectra_GP(:,N+1:end)';
+yV=Y(N+1:end);
+
+
+[XL,yl,XS,YS,beta,PCTVAR,mse] = plsregress(X,y,5);
+
+yfit = [ones(size(X,1),1) X]*beta;
+residuals=y-yfit;
+yfitv = [ones(size(XV,1),1) XV]*beta;
+ind_out=find(isoutlier(residuals)==1);
+residuals_v=yV-yfitv;
+ind_out_v=find(isoutlier(residuals_v)==1);
+
+% second calculation after outlier removal REPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASH
+X(ind_out,:)=[];
+y(ind_out)=[];
+% XV(ind_out_v,:)=[];
+% yV(ind_out_v)=[];
+[XL,yl,XS,YS,beta,PCTVAR,mse] = plsregress(X,y,ncomp);
+yfit = [ones(size(X,1),1) X]*beta;
+residuals=y-yfit;
+yfitv = [ones(size(XV,1),1) XV]*beta;
+residuals_v=yV-yfitv;
+
+
+
+% REPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASH
+TSS = sum((y-mean(y)).^2);
+RSS = sum((y-yfit).^2);
+Rsquared = 1 - RSS/TSS
+SE = sqrt(RSS./length(y));
+
+TSS = sum((yV-mean(yV)).^2);
+RSS_v = sum((yV-yfitv).^2);
+Rsquared_v = 1 - RSS_v/TSS
+SE_v = sqrt(RSS_v./length(yV));
+
+
+Ycomb=[y; yV];
+Y_fit=[yfit; yfitv];
+y_cell=cell(repmat(cell({'Calibration'}),[length(y) 1]));
+yV_cell=cell(repmat(cell({'Validation'}),[length(yV) 1]));
+y_cells=[y_cell; yV_cell];
+
+f=figure;
+set(gcf,'position',[320,101,600,780]);
+hp1=uipanel('position',[0 .25 1 .75]);
+hp2=uipanel('position',[0 0 1 .25]);
+hp1=scatterhist(Ycomb,Y_fit,'Direction','out','Kernel','off',...
+    'Location','NorthEast','Group',y_cells,'Parent',hp1);
+hp1(1).Children(2).MarkerFaceColor=[.07 .62 1];
+hp1(1).Children(2).MarkerSize=3;
+%hp1(1).Children(1).MarkerFaceColor=[1 .41 .16];
+hp1(1).Children(1).Marker='o';
+hp1(1).Children(1).MarkerSize=3;
+hp1(1).Children(1).LineWidth=1;
+
+hp1(2).Children(1).BinMethod='auto';
+hp1(2).Children(2).BinMethod='auto';
+hp1(3).Children(1).BinMethod='auto';
+hp1(3).Children(2).BinMethod='auto';
+
+ hp1(1).Parent.BackgroundColor='W';
+ hp2.BackgroundColor='W';
+ f.Color='W';
+line([min(y) max(yfit)],[min(y) max(yfit)])
+%REPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASH- TextBox REPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASH-
+dim = [.47 .15 .14 .16];
+dim2 = [.14 .54 .14 .08]; 
+
+
+R_2_str = strcat('R_{cal}^2 = ',{' '},num2str(Rsquared,'%4.3f'));
+R_2_str_v = strcat('R_{val}^2 = ',{' '},num2str(Rsquared_v,'%4.3f'));
+SE_str = strcat('SE_{cal} = ',{' '},num2str(SE,'%4.3f'));
+SE_v_str = strcat('SE_{val} = ',{' '},num2str(SE_v,'%4.3f'));
+N_cal = strcat('N_{cal} = ',{' '},num2str(length(y)));
+N_cal_v = strcat('N_{val} = ',{' '},num2str(length(yV)));
+
+str1 = [R_2_str,SE_str,R_2_str_v,SE_v_str];
+str2 = [N_cal,N_cal_v];
+% annotation('textbox',dim1,...
+%     'String',model_name,'FitBoxToText','off','Interpreter','none','EdgeColor','none');
+handles=guihandles(f);
+
+annotation(hp1(1).Parent,'textbox',dim,...
+    'String',str1,'FitBoxToText','off','FontSize',8);
+annotation(hp1(1).Parent,'textbox',dim2,...
+    'String',str2,'FitBoxToText','off','FontSize',8);
+%REPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASH-
+ylabel('Y_{Predicted}')
+xlabel('Y')
+set(gca,'XAxisLocation','bottom')
+set(gca,'YAxisLocation','left')
+legend({'Calibration','Validation','Perfect Match'})
+axes('Parent',hp2);
+[y_sorted, y_order] = sort(y);
+stem(residuals(y_order),'MarkerSize',2)
+hold on
+[y_v_sorted, y_v_order] = sort(yV);
+stem(residuals_v(y_v_order),'MarkerSize',2)
+xlabel('Observation (Y sorted, low to high)')
+ylabel('Residual')
+##### SOURCE END #####
+--></body></html>

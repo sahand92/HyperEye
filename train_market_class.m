@@ -85,6 +85,10 @@ classes=["blue"
     "kabuli"
     "kaspa"];
 
+classes=["down"
+    "other"
+    "up"];
+
 Predicted_classes=categorical(argmax,1:length(classes),classes);
 position=[repmat(1:100:500,[1 5])',reshape(repmat(1:100:500,[5 1]),[25,1])];
 imshow(insertText(imtile(JJ(:,:,[1 2 3],:)),position,cellstr(Predicted_classes),'BoxColor','white'));
