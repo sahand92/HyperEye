@@ -9,12 +9,12 @@ function [beta] = PLS_reg(spectra,variable,fold)
 % % %spectra_diff=(diff(spectra(:,50:end-50),2,2));
 % % % %spectra_diff(:,298:305)=ones(1,8).*(spectra_diff(:,297)+spectra_diff(:,306))./2;
 % % % 
-% % % 
-% spectra_diff=spectra';
-% % % %spectra_diff=lowpass(spectra_diff',50,length(spectra_diff));
-  rd = 2;
-  fl = 11;
-  spectra_diff = utils.sgolayfilt(spectra_diff',rd,fl);
+% % %
+spectra_diff=spectra;
+%=lowpass(spectra_diff',50,length(spectra_diff));
+%   rd = 2;
+%   fl = 11;
+%   spectra_diff = utils.sgolayfilt(spectra_diff',rd,fl);
 
 f=figure;
 set(gcf,'position',[320,101,750,780]);
@@ -69,10 +69,10 @@ residuals_v=yV-yfitv;
 ind_out_v=find(isoutlier(residuals_v)==1);
 
 %second calculation after outlier removal ------------------------------
-X(ind_out,:)=[];
-y(ind_out)=[];
-XV(ind_out_v,:)=[];
-yV(ind_out_v)=[];
+% X(ind_out,:)=[];
+% y(ind_out)=[];
+% XV(ind_out_v,:)=[];
+% yV(ind_out_v)=[];
     % Do PLS using 1:30 components------------------------------------------
     for i=1:20
 

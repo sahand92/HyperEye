@@ -1,18 +1,30 @@
 clear XTrain XValidation
-fold1 = randperm(878);
+N=998;
+fold1 = randperm(N);
 
-spectra=rescale(Data.spectra,-1,1);
+spectra=Data.spectra;%rescale(Data.spectra,-1,1);
 
-N=660;
-spectra_Train = spectra(:,fold1(1:N));
-YTrain_1 = Data.Protein(fold1(1:N));
-YTrain_2 = Data.Moisture(fold1(1:N));
-YTrain_3 = Data.Type(fold1(1:N));
+N=floor(3*N/4);
+Y_1=Data.Protein(fold1);
+Y_2=Data.Moisture(fold1);
+Y_3=Data.Type(fold1);
+spectra_fold=spectra(:,fold1);
 
-spectra_val = spectra(:,fold1(N+1:end));
-YValidation_1 = Data.Protein(fold1(N+1:end));
-YValidation_2 = Data.Moisture(fold1(N+1:end));
-YValidation_3 = Data.Type(fold1(N+1:end));
+ind_0=find(Y_1==0 | Y_2==0);
+spectra_fold(:,ind_0)=[];
+Y_1(ind_0)=[];
+Y_2(ind_0)=[];
+Y_3(ind_0)=[];
+
+spectra_Train = spectra_fold(:,1:N);
+YTrain_1 = Y_1(1:N);
+YTrain_2 = Y_2(1:N);
+YTrain_3 = Y_3(1:N);
+
+spectra_val = spectra_fold(:,N+1:end);
+YValidation_1 = Y_1(N+1:end);
+YValidation_2 = Y_2(N+1:end);
+YValidation_3 = Y_3(N+1:end);
 
 XTrain(1,:,1,:) = spectra_Train;
 XValidation(1,:,1,:) = spectra_val;
@@ -32,10 +44,10 @@ state.batchnorm1.TrainedMean = zeros(8,1,1,'double');
 state.batchnorm1.TrainedVariance  = ones(8,1,1,'double');
 
 
-parameters.conv2.Weights = dlarray(model.multitask.initializeGaussian([1,4,8,32],464));
+parameters.conv2.Weights = dlarray(model.multitask.initializeGaussian([1,4,8,32],464));%32
 parameters.conv2.Bias = dlarray(zeros(1,1,32,'double'));
 
-parameters.batchnorm2.Offset = dlarray(zeros(32,1,1,'double'));
+parameters.batchnorm2.Offset = dlarray(zeros(32,1,1,'double')); 
 parameters.batchnorm2.Scale = dlarray(ones(32,1,1,'double'));
 state.batchnorm2.TrainedMean = zeros(32,1,1,'double');
 state.batchnorm2.TrainedVariance  = ones(32,1,1,'double');

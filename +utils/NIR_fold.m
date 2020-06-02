@@ -9,7 +9,7 @@ Y(indperm)=Y;
 spectra_diff(:,indperm)=spectra_diff;
 
 %---------------------------------------
-ind_GP_0=find(Y==0);
+ind_GP_0=find(Y==0 | isnan(Y));
 spectra_diff(:,ind_GP_0)=[];
 Y(ind_GP_0)=[];
 %---------------------------------------

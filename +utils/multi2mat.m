@@ -1,7 +1,7 @@
-function [JJ sample W H A]=multi2mat(folder)
+function [JJ sample W H A]=multi2mat(folder,imdim)
 %folder='C:\MATLAB\Eyefoss\Corteva\Corteva';
 tic
-N=500;
+N=5;
 files = dir(folder);
 for i=3:length(files)
     names(i)=string(files(i).name);
@@ -10,7 +10,7 @@ names=rmmissing(names);
 %names=names(1:2);
 %W=zeros(length(names),250,'single');
 %H=zeros(length(names),250,'single');
-JJ=zeros(150,150,7,length(names)*N,'single'); %length(names)*N
+JJ=zeros(imdim,imdim,7,length(names)*N,'uint8'); %length(names)*N
 for i=1:length(names)
     %blobs=dir(strcat(folder,'\',names(i),'\ObjectImages\ImageData\decompressed\*.hips'));
    % length(blobs)/3
@@ -23,7 +23,7 @@ for i=1:length(names)
     end
     
     
-    J=zeros(150,150,7,'single'); % 7
+    J=zeros(imdim,imdim,7,'uint8'); % 7
     
     for j=1:N%length(blobs)/3
         
@@ -33,11 +33,11 @@ for i=1:length(names)
         [MultiSpecStruct,maskStruct,rngStruct] = ...
         readHIPSstructures(strcat(folder,'\',char(names(i)),'\ObjectImages\ImageData\decompressed\'),...
         char(blob_name));
-        [width height] = utils.bounding_dims(MultiSpecStruct.Image,maskStruct.Image);
+        [width height] = utils.bounding_dims(maskStruct.Image);
         W(i,j)=width;
         H(i,j)=height;
 %        if isnan(MultiSpecStruct.Image(1))
-%            I=zeros(150,150,6);
+%            I=zeros(imdim,imdim,6);
 %        else    
            I=MultiSpecStruct.Image.*maskStruct.Image;
            %I=rngStruct.Image.*maskStruct.Image; % restore back to top
@@ -49,10 +49,10 @@ for i=1:length(names)
         %imshow(I(:,:,[5 3 1])./256) %[5 3 1]) is RGB
         %crop each channel in a loop. Can make this more efficient later
         [w, l, c]=size(I);
-        if (w>150 | l>150)==1
-           padded=[];%ones(150,150,6,'single');
+        if (w>imdim | l>imdim)==1
+           padded=255.*ones(imdim,imdim,6,'uint8');
         else
-           padded = padarray(I,[floor((150-w)/2) floor((150-l)/2)],0);
+           padded = padarray(I,[floor((imdim-w)/2) floor((imdim-l)/2)],0);
         end
         %padded = imresize(padded,[100 100]); % resize images to 100X100 pixels
            [wp, lp, cp]=size(padded);

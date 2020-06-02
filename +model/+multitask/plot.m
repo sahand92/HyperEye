@@ -18,8 +18,8 @@ doTraining = false;
 % YTrain = YTrain_1;
 % YValidation = YValidation_1;
 
-YPredicted = gather(extractdata(dlYPred_2))';
-YPredicted_v = gather(extractdata(dlYVal_2))';
+YPredicted = gather(extractdata(dlYPred_1))';
+YPredicted_v = gather(extractdata(dlYVal_1))';
 residuals = YTrain-YPredicted;
 residuals_v = YValidation-YPredicted_v;
 
