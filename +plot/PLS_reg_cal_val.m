@@ -1,18 +1,17 @@
-function [beta Rsquared_v SE_v num_outliers ncomp] = PLS_reg(spectra,variable,fold)
+function [beta Rsquared_v SE_v num_outliers ncomp] = PLS_reg(spectra,variable,cal,val)
 %clearvars -except T spectra variable ncomp
 
 %spectra=table2array(T(:,7:end));
 %variable=T.VarName6;
-%spectra_diff=(diff(spectra(:,370:end-80),2,2));
-%spectra_diff=(diff(spectra(:,1:end),1,2));
+% spectra_diff=(diff(spectra(:,370:end-80),2,2));
+  
+%  spectra_diff=(diff(spectra(:,200:end-80),1,2));
+% spectra_diff=(diff(spectra(:,200:end-80),1,2));
 
-%  spectra_diff=(diff(spectra(:,20:end-20),1,2));
- %spectra_diff=(diff(spectra(:,200:end-80),1,2));
 
-
-%spectra_diff=spectra(:,50:end-50);
+% % %spectra_diff=spectra(:,50:end-50);
 % % 
-%spectra_diff=(diff(spectra(:,50:end-50),2,2));
+% % %spectra_diff=(diff(spectra(:,50:end-50),2,2));
 % % % %spectra_diff(:,298:305)=ones(1,8).*(spectra_diff(:,297)+spectra_diff(:,306))./2;
 % % % 
 % % %
@@ -47,22 +46,22 @@ Y=variable;% Protien ISI(inds==1);
 %+T.VarName14;
 
 %randomize observations and validations
-indperm=fold; %randperm(length(Y));
-Y(indperm)=Y;
-spectra_diff(:,indperm)=spectra_diff;
+% indperm=fold; %randperm(length(Y));
+% Y(indperm)=Y;
+% spectra_diff(:,indperm)=spectra_diff;
 %---------------------------------------
 ind_GP_0=find(Y==0 | isnan(Y));
 spectra_GP=spectra_diff;
 spectra_GP(:,ind_GP_0)=[];
 Y(ind_GP_0)=[];
 
-N=floor(size(spectra_GP,2)*0.75);
+%N=floor(size(spectra_GP,2)*0.75);
 %N=501;
 %N
-X=spectra_GP(:,1:N)';
-y=Y(1:N);
-XV=spectra_GP(:,N+1:end)';
-yV=Y(N+1:end);
+X=spectra_GP(:,cal)';
+y=Y(cal);
+XV=spectra_GP(:,val)';
+yV=Y(val);
 
 
 [XL,yl,XS,YS,beta,PCTVAR,mse] = plsregress(X,y,5);
@@ -70,18 +69,19 @@ yV=Y(N+1:end);
 yfit = [ones(size(X,1),1) X]*beta;
 residuals=y-yfit;
 yfitv = [ones(size(XV,1),1) XV]*beta;
-ind_out=find(isoutlier(residuals)==1);
-residuals_v=yV-yfitv;
-ind_out_v=find(isoutlier(residuals_v)==1);
-num_outliers = length(ind_out);
-%second calculation after outlier removal ------------------------------
-% X(ind_out,:)=[];
-% y(ind_out)=[];
-% XV(ind_out_v,:)=[];
-% yV(ind_out_v)=[];
+% ind_out=find(isoutlier(residuals)==1);
+% residuals_v=yV-yfitv;
+% ind_out_v=find(isoutlier(residuals_v)==1);
+% num_outliers = length(ind_out);
+%num_outliers=0;
+% %second calculation after outlier removal ------------------------------
+X(ind_out,:)=[];
+y(ind_out)=[];
+XV(ind_out_v,:)=[];
+yV(ind_out_v)=[];
 
     % Do PLS using 1:30 components------------------------------------------
-    for i=1:30
+    for i=1:20
 
     [XL,yl,XS,YS,beta,PCTVAR,mse] = plsregress(X,y,i);
     yfit = [ones(size(X,1),1) X]*beta;
@@ -96,7 +96,7 @@ num_outliers = length(ind_out);
     Rsquared_v(i) = 1 - RSS_v(i)/TSS;
     end
     ncomp=find(RSS_v==min(RSS_v));
-
+ncomp=30;
     %-----------------------------------------------------------------------
 [XL,yl,XS,YS,beta,PCTVAR,mse] = plsregress(X,y,ncomp);
 yfit = [ones(size(X,1),1) X]*beta;

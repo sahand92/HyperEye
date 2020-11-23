@@ -6,7 +6,8 @@ FeatureVector=coeffs;
 FinalData = FeatureVector'*DataAdjust';
 
 figure
-scatter(FinalData(1,:),FinalData(2,:));
+scatter3(FinalData(1,:),FinalData(2,:),FinalData(3,:));
 xlabel('PC1')
 ylabel('PC2')
+zlabel('PC3')
 end

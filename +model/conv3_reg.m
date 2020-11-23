@@ -22,7 +22,10 @@ layers = [
     reluLayer('Name','relu_3')
 
     %maxPooling2dLayer([1 2],'Stride',2)
-
+    fullyConnectedLayer(20)
+    reluLayer
+    fullyConnectedLayer(20)
+    reluLayer
     fullyConnectedLayer(1,'Name','FC_1')
     regressionLayer('Name','regout_1')];
 % -------------------------------------------------------------

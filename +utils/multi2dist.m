@@ -1,8 +1,9 @@
 function [sample, c1, c2, c3, c4, c5, c6, Area_p,...
     W, H, A, Circularity, Eccentricity,...
     EquivDiameter, Perimeter]=multi2dist(folder)
+
 %folder='C:\MATLAB\Eyefoss\Corteva\Corteva';
-N=1000;
+N=2000;
 files = dir(folder);
 for i=3:length(files)
     names(i)=string(files(i).name);
@@ -29,6 +30,7 @@ Eccentricity = zeros(length(names),N);
 EquivDiameter = zeros(length(names),N);
 Circularity = zeros(length(names),N);
 Perimeter = zeros(length(names),N);
+GermSize = zeros(length(names),N);
 
 parfor i=1:length(names)
    % blobs=dir(strcat(folder,'\',names(i),'\ObjectImages\ImageData\decompressed\*.hips'));
@@ -42,9 +44,10 @@ parfor i=1:length(names)
                 '\ObjectImages\ImageData\',char(blob_name)))
         
         [MultiSpecStruct,maskStruct,rngStruct] = ...
-        readHIPSstructures(strcat(folder,'\',char(names(i)),'\ObjectImages\ImageData\'),...
+        readHIPSstructures(strcat(folder,'\',char(names(i)),...
+        '\ObjectImages\ImageData\decompressed\'),... % \decompressed
         char(blob_name));
-        [width height] = utils.bounding_dims(MultiSpecStruct.Image,maskStruct.Image);
+        [width height] = utils.bounding_dims(MultiSpecStruct.Image.*maskStruct.Image);
         W(i,j)=width;
         H(i,j)=height;
         I=MultiSpecStruct.Image.*maskStruct.Image;
@@ -54,7 +57,6 @@ parfor i=1:length(names)
         c4(i,j) = mean(nonzeros(I(:,:,4)./255));
         c5(i,j) = mean(nonzeros(I(:,:,5)./255));
         c6(i,j) = mean(nonzeros(I(:,:,6)./255));
-        
         stats = regionprops(maskStruct.Image,'Circularity',...
         'Eccentricity','EquivDiameter','Perimeter');
         Eccentricity(i,j) = stats.Eccentricity;

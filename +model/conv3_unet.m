@@ -1,13 +1,13 @@
-function [trainingData layers options] = conv3_unet(imageDir,labelDir)
+function [dsTrain layers lgraph options] = conv3_unet(imageDir,labelDir)
 
 % -------------------------------------------------------------
 %imageDir='C:\Segment_germ\Images';
 %labelDir='C:\Segment_germ\Labels';
 
-imds=imageDatastore(imageDir);
+imds=imageDatastore(imageDir,'ReadFcn',@utils.padImgReader);
 classNames=["endosperm","germ","background"];
 labelID=[1 2 0];
-pxds = pixelLabelDatastore(labelDir,classNames,labelID);
+pxds = pixelLabelDatastore(labelDir,classNames,labelID,'ReadFcn',@utils.padImgReader);
 pxds.ReadSize=25;
 imds.ReadSize=25;
 
@@ -15,9 +15,30 @@ tbl = countEachLabel(pxds);
 totalNumberOfPixels = sum(tbl.PixelCount);
 frequency = tbl.PixelCount / totalNumberOfPixels;
 classWeights = 1./frequency;
-trainingData = pixelLabelImageDatastore(imds,pxds);
+
+augmenter = imageDataAugmenter( ...
+    'RandRotation',[-90,90], ...
+   'RandXTranslation',[-10 10], ...
+    'RandYTranslation',[-10 10]);
+
+dsTrain = pixelLabelImageDatastore(imds,pxds,...
+    'DataAugmentation',augmenter);
+
 
 % -------------------------------------------------------------
+inputTileSize=[152,152,3];
+encoderDepth=3;
+numclasses=3;
+
+%--------------------------------------------------------------
+[lgraph, ~] = unetLayers(inputTileSize,numclasses,...
+    'EncoderDepth',encoderDepth);%,...
+  % 'ConvolutionPadding','valid');
+outputLayer = pixelClassificationLayer('Classes',tbl.Name,'ClassWeights',...
+    classWeights,'Name','Output');
+lgraph = replaceLayer(lgraph,'Segmentation-Layer',outputLayer);
+
+
 layers = [
     imageInputLayer([150 150 3])
 
