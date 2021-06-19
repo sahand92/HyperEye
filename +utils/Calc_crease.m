@@ -6,3 +6,4 @@ function crease_depth = Calc_crease(Ir)
     crease_H = prctile(Ir_centre(:),5);
     crease_depth = prctile(Ir(:),95) - crease_H;
 end
+
