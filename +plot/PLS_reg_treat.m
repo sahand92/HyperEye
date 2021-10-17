@@ -2,22 +2,23 @@ function [Rsquared RMSE ncomp] = PLS_reg_treat(spectra,variable,fold,treatment)
 %clearvars -except T spectra variable ncomp
 rd = 2;
 fl = 11;
+edge_pts = 2;
 
 if treatment == 'raw'
     spectra_diff = spectra';
 elseif treatment == 'SGF'
     spectra_diff = utils.sgolayfilt(spectra',rd,fl);
 elseif treatment == 'crp'
-    spectra_diff= spectra(:,10:end-10);
+    spectra_diff= spectra(:,edge_pts:end-edge_pts);
     spectra_diff = utils.sgolayfilt(spectra_diff',rd,fl);
 elseif treatment == '1st'
-    spectra_diff=(diff(spectra(:,10:end-10),1,2));
+    spectra_diff=(gradient(spectra(:,edge_pts:end-edge_pts),1));
     spectra_diff = utils.sgolayfilt(spectra_diff',rd,fl);
 elseif treatment == '2nd'
-    spectra_diff=(diff(spectra(:,10:end-10),2,2));
+    spectra_diff= gradient(gradient(spectra(:,edge_pts:end-edge_pts),1),1);
     spectra_diff = utils.sgolayfilt(spectra_diff',rd,fl);
 else
-    spectra_diff=(diff(spectra(:,10:end-10),2,2));
+    spectra_diff=(diff(spectra(:,edge_pts:end-edge_pts),2,2));
     spectra_diff = utils.sgolayfilt(spectra_diff',rd,fl);
     spectra_diff = zscore(spectra_diff);
 end
