@@ -1,8 +1,8 @@
-function [Rsquared RMSE ncomp] = PLS_reg_treat(spectra,variable,fold,treatment)
+function [Rsquared RMSE ncomp Beta] = PLS_reg_treat(spectra,variable,fold,treatment)
 %clearvars -except T spectra variable ncomp
 rd = 2;
 fl = 11;
-edge_pts = 2;
+edge_pts = 10;
 
 if treatment == 'raw'
     spectra_diff = spectra';
@@ -61,7 +61,7 @@ for j = 1:30
     RSS_ncomp(j) = mean(RSS_v);
 end
 ncomp = find(RSS_ncomp<prctile(RSS_ncomp,10),1);
-
+%ncomp = 5
 yData = nan(N,1);
 yPred = nan(N,1);
 
@@ -77,8 +77,9 @@ yPred = nan(N,1);
         yfitv = [ones(size(XV,1),1) XV]*beta;
         yData(test(cv,i)) = yV;
         yPred(test(cv,i)) = yfitv;
+        Beta(i,:) = beta;
     end
-figure
+%figure
 scatter(yData,yPred,10,...
     'MarkerEdgeColor','black',...
     'MarkerFaceColor',[0.07,0.62,1.00],...
