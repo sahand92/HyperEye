@@ -1,26 +1,26 @@
-function [beta Rsquared_v SE_v num_outliers ncomp] = PLS_reg(spectra,variable,fold)
+function [XL,yl,XS,YS,beta Rsquared_v SE_v num_outliers ncomp stats] = PLS_reg(spectra,variable,fold,treatment)
 %clearvars -except T spectra variable ncomp
+rd = 2;
+fl = 11;
 
-%spectra=table2array(T(:,7:end));
-%variable=T.VarName6;
-%spectra_diff=(diff(spectra(:,370:end-80),2,2));
-%spectra_diff=(diff(spectra(:,1:end),1,2));
+edge_pts = 5;
 
-%  spectra_diff=(diff(spectra(:,20:end-20),1,2));
- %spectra_diff=(diff(spectra(:,200:end-80),1,2));
+if treatment == 'raw'
+    spectra_diff = spectra(:,edge_pts:end-edge_pts)';
+elseif treatment == 'MCS'
+    spectra_diff = zscore(spectra(:,edge_pts:end-edge_pts)');
+elseif treatment == 'SGF'
+    spectra_diff = utils.sgolayfilt(zscore(spectra(:,edge_pts:end-edge_pts)'),rd,fl);
+elseif treatment == '1st'
+    [~, spectra_diff]=gradient(utils.sgolayfilt(zscore(spectra(:,edge_pts:end-edge_pts)'),rd,fl),1);
+elseif treatment == '2nd'
+    [~, spectra_diff]=gradient(utils.sgolayfilt(zscore(spectra(:,edge_pts:end-edge_pts)'),rd,fl),1);
+    [~, spectra_diff]= gradient(spectra_diff,1);
+else
+    spectra_diff = 0;
+end
 
-
-%spectra_diff=spectra(:,50:end-50);
-% % 
-%spectra_diff=(diff(spectra(:,50:end-50),2,2));
-% % % %spectra_diff(:,298:305)=ones(1,8).*(spectra_diff(:,297)+spectra_diff(:,306))./2;
-% % % 
-% % %
-spectra_diff=spectra;
-%=lowpass(spectra_diff',50,length(spectra_diff));
-  rd = 2;
-  fl = 11;
-  spectra_diff = utils.sgolayfilt(spectra_diff',rd,fl);
+%------------------
 
 f=figure;
 set(gcf,'position',[320,101,750,780]);
@@ -31,17 +31,6 @@ CB1 = uicontrol('Parent',hp3,'Position',[25 700 1100 15],...
     'Style','checkbox','String','Z-Score','FontSize',10,...
     'Callback',@(spectra,variable,ncomp) plot.PLS_reg);
 
-% if get(CB1, 'Value')
-%spectra_diff=zscore(spectra_diff);
-% else
-%   spectra_diff=spectra_diff;  
-% end
-%spectra_diff=normalize(spectra_diff,1,'range');
-
-
-%inds=kmeans(spectra_diff',3,'Distance','cityblock');
-
-%spectra_diff=spectra_diff(:,inds==1);
 
 Y=variable;% Protien ISI(inds==1);
 %+T.VarName14;
@@ -96,9 +85,9 @@ num_outliers = length(ind_out);
     Rsquared_v(i) = 1 - RSS_v(i)/TSS;
     end
     ncomp=find(RSS_v==min(RSS_v));
-
+    %ncomp = 7;
     %-----------------------------------------------------------------------
-[XL,yl,XS,YS,beta,PCTVAR,mse] = plsregress(X,y,ncomp);
+[XL,yl,XS,YS,beta,PCTVAR,mse,stats] = plsregress(X,y,ncomp);
 yfit = [ones(size(X,1),1) X]*beta;
 residuals=y-yfit;
 yfitv = [ones(size(XV,1),1) XV]*beta;

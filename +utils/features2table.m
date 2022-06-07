@@ -107,10 +107,10 @@ table_all = array2table([data_mean,data_std],'VariableNames',{'barcode','N_up','
     'up_area_rect_std','down_area_std','down_area_int_std','down_area_rect_std',...
     'germ_size_std','endosperm_size_std','crease_depth_std'});
 
- mydir  = folder;
- idcs   = strfind(mydir,'\');
- ind_1 = idcs(length(idcs)-1)+1;
- ind_2 = idcs(length(idcs))-1;
+%  mydir  = folder;
+%  idcs   = strfind(mydir,'\');
+%  ind_1 = idcs(length(idcs)-1)+1;
+%  ind_2 = idcs(length(idcs))-1;
 
- newdir = mydir(ind_1:ind_2);
+ newdir = 'MY_testset';%mydir(ind_1:ind_2);
 writetable(table_all,strcat(newdir,'.xlsx'),'Sheet',1,'Range','D1');    

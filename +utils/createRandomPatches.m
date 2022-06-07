@@ -16,6 +16,7 @@ mkdir(labelDir,'Patches');
 
 for i = 1:length(ImageFiles)
     
+    %I = imread(fullfile(imageDir,ImageFiles{i}));
     I = imread(fullfile(imageDir,ImageFiles{i}));
     L = imread(fullfile(labelDir,LabelFiles{i}));
     
@@ -25,6 +26,7 @@ for i = 1:length(ImageFiles)
         patchSize(1)-1,...
         patchSize(2)-1];
     
+        %I_patch = utils.randomImageNoise(imcrop(I,rect));
         I_patch = imcrop(I,rect);
         L_patch = imcrop(L,rect);
         

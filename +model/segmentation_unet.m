@@ -1,7 +1,7 @@
 %Network
 inputTileSize=[160,160,3];
-encoderDepth=1;
-numclasses=9;
+encoderDepth=2;
+numclasses=4;
 [lgraph, outputSize] = unetLayers(inputTileSize,numclasses,...
     'EncoderDepth',encoderDepth);%,...
   % 'ConvolutionPadding','valid');
@@ -20,20 +20,20 @@ imds=imageDatastore(imageDir);
 %classNames=["bad","good"];
 %labelID=[1 2];
 
-%  classNames=["sound","bad","split"];
-%  labelID=[1 2 3];
+ classNames=["sound","bad","split","foreign"];
+ labelID=[1 2 3 5];
 
 %  classNames=["BG","K_sound","K_bad","KD_split","D_sound","D_bad"];
 %  labelID=[0 1 2 3 4 5];
 
-classNames=["BG","K_sound","K_bad","KD_split","D_sound","D_bad","L_sound","L_bad","L_split"];
-labelID=[0 1 2 3 4 5 7 8 9];
+% classNames=["BG","K_sound","K_bad","KD_split","D_sound","D_bad","L_sound","L_bad","L_split"];
+% labelID=[0 1 2 3 4 5 7 8 9];
 
 pxds = pixelLabelDatastore(labelDir,classNames,labelID);
 %pxds = pixelLabelDatastore(utils.natsortfiles(pxds.Files),classNames,labelID);
 
-% dsTrain = randomPatchExtractionDatastore(imds,pxds,...
-%     [inputTileSize(1),inputTileSize(2)],'PatchesPerImage',16);
+%  dsTrain = randomPatchExtractionDatastore(imds,pxds,...
+%      [inputTileSize(1),inputTileSize(2)],'PatchesPerImage',1);
 
 augmenter = imageDataAugmenter('RandRotation',[-90 90],...
     'RandXReflection',true,...
@@ -47,9 +47,10 @@ pxds_val = pixelLabelDatastore(validationlabelDir,classNames,labelID);
 dsVal = pixelLabelImageDatastore(imds_val,pxds_val);
 
 
-
-%dataSource = 'Training';
-%dsTrain_new = transform(dsTrain,@(patchIn)model.augmentmat(patchIn,dataSource));
+% dsTrain = pixelLabelImageDatastore(imds,pxds);
+% dsTrain=shuffle(dsTrain);
+% dataSource = 'Training';
+% dsTrain_new = transform(dsTrain,@(patchIn)model.augmentmat(patchIn,dataSource));
 
 
 %Training options
@@ -68,14 +69,15 @@ maxEpochs = 200;
 %     'GradientThreshold',0.05, ...
 %     'Plots','training-progress', ...
 %     'VerboseFrequency',20);
-validationFrequency = 50;
+%validationFrequency = 50;
+validationFrequency = 100;
 options = trainingOptions('adam', ... %'sgdm'
     'MiniBatchSize',32, ...
     'ExecutionEnvironment','gpu',...
     'MaxEpochs',250, ...
     'InitialLearnRate',1e-3, ...
     'LearnRateSchedule','none', ...
-    'LearnRateDropFactor',0.1, ...
+    'LearnRateDropFactor',0.2, ...
     'LearnRateDropPeriod',100, ...
     'ValidationData',dsVal, ...
     'ValidationFrequency',validationFrequency, ...

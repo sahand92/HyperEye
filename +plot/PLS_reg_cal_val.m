@@ -15,11 +15,11 @@ function [beta Rsquared_v SE_v num_outliers ncomp] = PLS_reg(spectra,variable,ca
 % % % %spectra_diff(:,298:305)=ones(1,8).*(spectra_diff(:,297)+spectra_diff(:,306))./2;
 % % % 
 % % %
-spectra_diff=spectra;
+spectra_diff=spectra';
 %=lowpass(spectra_diff',50,length(spectra_diff));
-  rd = 2;
-  fl = 11;
-  spectra_diff = utils.sgolayfilt(spectra_diff',rd,fl);
+%   rd = 2;
+%   fl = 11;
+%   spectra_diff = utils.sgolayfilt(spectra_diff',rd,fl);
 
 f=figure;
 set(gcf,'position',[320,101,750,780]);
@@ -75,10 +75,10 @@ yfitv = [ones(size(XV,1),1) XV]*beta;
 % num_outliers = length(ind_out);
 %num_outliers=0;
 % %second calculation after outlier removal ------------------------------
-X(ind_out,:)=[];
-y(ind_out)=[];
-XV(ind_out_v,:)=[];
-yV(ind_out_v)=[];
+% X(ind_out,:)=[];
+% y(ind_out)=[];
+% XV(ind_out_v,:)=[];
+% yV(ind_out_v)=[];
 
     % Do PLS using 1:30 components------------------------------------------
     for i=1:20
@@ -96,7 +96,7 @@ yV(ind_out_v)=[];
     Rsquared_v(i) = 1 - RSS_v(i)/TSS;
     end
     ncomp=find(RSS_v==min(RSS_v));
-ncomp=30;
+%ncomp=19;
     %-----------------------------------------------------------------------
 [XL,yl,XS,YS,beta,PCTVAR,mse] = plsregress(X,y,ncomp);
 yfit = [ones(size(X,1),1) X]*beta;
@@ -110,7 +110,8 @@ RSS = sum((y-yfit).^2);
 Rsquared = 1 - RSS/TSS;
 SE = sqrt(RSS./length(y));
 
-TSS = sum((yV-mean(yV)).^2);
+%TSS = sum((yV-mean(yV)).^2);
+TSS = sum((yV-mean(y)).^2);
 RSS_v = sum((yV-yfitv).^2);
 Rsquared_v = 1 - RSS_v/TSS;
 SE_v = sqrt(RSS_v./length(yV));

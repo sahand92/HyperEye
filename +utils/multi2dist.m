@@ -3,7 +3,7 @@ function [sample, c1, c2, c3, c4, c5, c6, Area_p,...
     EquivDiameter, Perimeter]=multi2dist(folder)
 
 %folder='C:\MATLAB\Eyefoss\Corteva\Corteva';
-N=2000;
+N=3000;
 files = dir(folder);
 for i=3:length(files)
     names(i)=string(files(i).name);
@@ -30,7 +30,7 @@ Eccentricity = zeros(length(names),N);
 EquivDiameter = zeros(length(names),N);
 Circularity = zeros(length(names),N);
 Perimeter = zeros(length(names),N);
-GermSize = zeros(length(names),N);
+%GermSize = zeros(length(names),N);
 
 parfor i=1:length(names)
    % blobs=dir(strcat(folder,'\',names(i),'\ObjectImages\ImageData\decompressed\*.hips'));
